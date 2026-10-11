@@ -5,9 +5,9 @@ let currentGame = null;
 
 // 学校 iPad 可能禁用本地存储，统一加保护，坏了也不崩
 const store = {
-  get(k){ try{ return store.get(k); }catch(e){ return null; } },
-  set(k,v){ try{ store.set(k,v); }catch(e){} },
-  del(k){ try{ store.del(k); }catch(e){} }
+  get(k){ try{ return localStorage.getItem(k); }catch(e){ return null; } },
+  set(k,v){ try{ localStorage.setItem(k,v); }catch(e){} },
+  del(k){ try{ localStorage.removeItem(k); }catch(e){} }
 };
 
 const CATS = { action:'动作', puzzle:'益智', chess:'棋牌', arcade:'街机' };
