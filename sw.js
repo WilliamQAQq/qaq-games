@@ -1,8 +1,8 @@
 /* QAQ 游戏中心 · Service Worker：游戏离线可玩（iPad 添加到主屏幕后断网也能玩） */
-const CACHE = 'qaq-games-v3';
+const CACHE = 'qaq-games-v4';
 const ASSETS = [
-  './', './index.html', './style.css',
-  './js/games.js', './js/app.js',
+  './', './index.html', './style.css?v=4',
+  './js/games.js?v=4', './js/app.js?v=4',
   './manifest.webmanifest', './icon-192.png', './icon-512.png',
 ];
 self.addEventListener('install', (e) => {

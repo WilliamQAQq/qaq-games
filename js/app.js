@@ -3,6 +3,13 @@ let currentCat = 'all';
 let cleanup = null;
 let currentGame = null;
 
+// 学校 iPad 可能禁用本地存储，统一加保护，坏了也不崩
+const store = {
+  get(k){ try{ return store.get(k); }catch(e){ return null; } },
+  set(k,v){ try{ store.set(k,v); }catch(e){} },
+  del(k){ try{ store.del(k); }catch(e){} }
+};
+
 const CATS = { action:'动作', puzzle:'益智', chess:'棋牌', arcade:'街机' };
 
 function $(s){ return document.querySelector(s); }
@@ -25,7 +32,7 @@ function setCat(c, el){
 }
 
 function bestText(def){
-  const v = parseInt(localStorage.getItem(def.bestKey)||'0')||0;
+  const v = parseInt(store.get(def.bestKey)||'0')||0;
   if(def.id==='memory') return v? `🏆 最少步：${v}` : '🏆 暂无记录，快来首通！';
   if(def.id==='gomoku') return v? `🏆 胜场：${v}` : '🏆 挑战 AI 拿首胜！';
   if(def.id==='minesweeper') return '🏆 通关即荣誉';
@@ -69,7 +76,7 @@ function openGame(id){
   $('#page-player').classList.add('active');
   $('#player-title').textContent = def.icon+' '+def.name;
   $('#player-help').textContent = '玩法：'+def.help;
-  const best = localStorage.getItem(def.bestKey)||'0';
+  const best = store.get(def.bestKey)||'0';
   $('#player-best').textContent = best&&best!=='0' ? '🏆 '+best : '';
   const box = $('#player-box');
   box.innerHTML = '<div class="game-root" id="game-root"></div>';
@@ -103,17 +110,17 @@ function normalizeUrl(u){
 
 const CF_DEFAULT = 'https://qaq-proxy.chattsun268.workers.dev';
 function getCFBase(){
-  return ((localStorage.getItem('cf_worker')||'').trim().replace(/\/+$/,'') || CF_DEFAULT);
+  return ((store.get('cf_worker')||'').trim().replace(/\/+$/,'') || CF_DEFAULT);
 }
 function onNodeChange(){
   const v = $('#proxy-node').value;
   $('#cf-row').style.display = v==='cf' ? 'flex' : 'none';
-  try{ localStorage.setItem('proxy_node', v); }catch(e){}
+  try{ store.set('proxy_node', v); }catch(e){}
 }
 function saveCF(){
   const v = ($('#cf-worker').value||'').trim().replace(/\/+$/,'');
   if(!/^https:\/\//i.test(v)){ $('#proxy-status').textContent='❌ Worker 地址必须是 https:// 开头'; return; }
-  try{ localStorage.setItem('cf_worker', v); }catch(e){}
+  try{ store.set('cf_worker', v); }catch(e){}
   $('#proxy-status').textContent='✅ 已保存 CF Worker：'+v;
 }
 async function testCF(){
@@ -150,7 +157,7 @@ function goProxy(){
   if(node==='cf'){
     const base = ($('#cf-worker')?.value||'').trim() || getCFBase();
     if(!base){ status.textContent = '❌ 先在下方填你的 Cloudflare Worker 地址（见关于页 3 分钟部署）'; return; }
-    try{ localStorage.setItem('cf_worker', base.trim().replace(/\/+$/,'')); }catch(e){}
+    try{ store.set('cf_worker', base.trim().replace(/\/+$/,'')); }catch(e){}
   }
   const final = buildProxyUrl(url, node);
   const frame = $('#proxy-frame');
@@ -167,19 +174,19 @@ function quickProxy(u){ $('#proxy-url').value = u; goProxy(); }
 
 function saveProxyHistory(u){
   try{
-    let h = JSON.parse(localStorage.getItem('proxy_hist')||'[]');
+    let h = JSON.parse(store.get('proxy_hist')||'[]');
     h = [u, ...h.filter(x=>x!==u)].slice(0,8);
-    localStorage.setItem('proxy_hist', JSON.stringify(h));
+    store.set('proxy_hist', JSON.stringify(h));
     renderProxyHistory();
   }catch(e){}
 }
 function renderProxyHistory(){
   try{
-    const h = JSON.parse(localStorage.getItem('proxy_hist')||'[]');
+    const h = JSON.parse(store.get('proxy_hist')||'[]');
     $('#proxy-history').innerHTML = h.map(u=>`<button class="hist-chip" onclick="quickProxy('${u.replace(/'/g,'')}')">${u.replace(/^https?:\/\//,'').slice(0,28)}</button>`).join('') || '<span class="muted">暂无</span>';
   }catch(e){}
 }
-function clearProxyHistory(){ localStorage.removeItem('proxy_hist'); renderProxyHistory(); }
+function clearProxyHistory(){ store.del('proxy_hist'); renderProxyHistory(); }
 function proxyFullscreen(){
   const f = $('#proxy-frame');
   if(f.requestFullscreen) f.requestFullscreen();
@@ -190,7 +197,7 @@ setInterval(()=>{ const el=$('#clock'); if(el) el.textContent = new Date().toLoc
 $('#year').textContent = new Date().getFullYear();
 // 恢复上次节点 + CF 地址（无保存时用内置默认 Worker，开箱即用）
 try{
-  const n = localStorage.getItem('proxy_node'); if(n) $('#proxy-node').value = n;
+  const n = store.get('proxy_node'); if(n) $('#proxy-node').value = n;
   if($('#cf-worker')) $('#cf-worker').value = getCFBase();
   onNodeChange();
 }catch(e){}

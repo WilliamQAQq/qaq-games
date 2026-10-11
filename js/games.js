@@ -325,7 +325,7 @@ window.GAME_IMPL.memory = function(root){
     if(!first){first={d,i};return;}
     steps++;upd();
     if(deck[first.i]===deck[i]){first.d.classList.add('done');d.classList.add('done');first=null;pairs++;upd();
-      if(pairs===8){if(!getBest('best_memory')||steps<getBest('best_memory'))localStorage.setItem('best_memory',String(steps));setTimeout(()=>{alert('🎉 完成! 用了'+steps+'步');upd();},300);}
+      if(pairs===8){if(!getBest('best_memory')||steps<getBest('best_memory')){try{localStorage.setItem('best_memory',String(steps));}catch(e){}}setTimeout(()=>{alert('🎉 完成! 用了'+steps+'步');upd();},300);}
     } else {lock=true;const a=first.d;setTimeout(()=>{a.classList.remove('open');a.textContent='❓';d.classList.remove('open');d.textContent='❓';first=null;lock=false;},650);}
   }
   reset();root._restart=reset;
