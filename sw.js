@@ -1,5 +1,5 @@
 /* QAQ 游戏中心 · Service Worker：游戏离线可玩（iPad 添加到主屏幕后断网也能玩） */
-const CACHE = 'qaq-games-v2';
+const CACHE = 'qaq-games-v3';
 const ASSETS = [
   './', './index.html', './style.css',
   './js/games.js', './js/app.js',
@@ -20,6 +20,17 @@ self.addEventListener('fetch', (e) => {
   // 导航请求：离线回退到首页
   if (e.request.mode === 'navigate') {
     e.respondWith(fetch(e.request).catch(() => caches.match('./index.html')));
+    return;
+  }
+  // 自家 JS/CSS：网络优先，保证更新即时生效；断网才读缓存
+  if (u.origin === self.location.origin && /\.(js|css)$/.test(u.pathname)) {
+    e.respondWith(
+      fetch(e.request).then((res) => {
+        const copy = res.clone();
+        caches.open(CACHE).then((c) => c.put(e.request, copy)).catch(() => {});
+        return res;
+      }).catch(() => caches.match(e.request))
+    );
     return;
   }
   e.respondWith(
