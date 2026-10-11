@@ -1,0 +1,10 @@
+{
+  "name": "qaq-proxy-server",
+  "version": "1.0.0",
+  "description": "QAQ游戏中心 本地代理后端",
+  "main": "proxy-server.js",
+  "dependencies": {
+    "express": "^4.19.2",
+    "cors": "^2.8.5"
+  }
+}

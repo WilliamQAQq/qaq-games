@@ -1,0 +1,5 @@
+# Cloudflare Worker 用 wrangler 命令行部署时才需要，Dashboard 粘贴部署可忽略
+name = "qaq-proxy"
+main = "cloudflare-worker.js"
+compatibility_date = "2024-11-01"
+workers_dev = true
