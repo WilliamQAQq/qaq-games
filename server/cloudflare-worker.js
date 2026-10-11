@@ -57,14 +57,32 @@ async function handleProxy(target, req) {
   }
   const upstream = await fetch(target, init);
   const ct = upstream.headers.get("content-type") || "";
+  const myOrigin = new URL(req.url).origin; // Worker 没有 location，用请求 URL 取自身源
 
-  // HTML：注入 <base> 保证相对路径可用
+  // HTML：导航链接改写成走本代理 + 注入 <base> 保证资源相对路径可用
   if (ct.includes("text/html")) {
     let html = await upstream.text();
+    const finalUrl = upstream.url || target; // 跳转后的最终地址
+    // 区域劫持修正：PH 等站会把中文区域跳到区域域名（如 cn.pornhub.com，学校网常直接掐断）
+    html = html.replace(/\bcn\.pornhub\.com\b/g, "www.pornhub.com");
+    // 点击链接不再直连目标站，全部留在代理内（学校网封域名也不影响）
+    const proxify = (val) => {
+      if (!val || /^(#|javascript:|mailto:|tel:|data:|sms:)/i.test(val)) return null;
+      try {
+        const abs = new URL(val, finalUrl).href;
+        if (!/^https?:/i.test(abs)) return null;
+        if (abs.startsWith(myOrigin)) return null; // 已是代理地址
+        return myOrigin + "/?url=" + encodeURIComponent(abs);
+      } catch { return null; }
+    };
+    html = html.replace(/(\b(?:href|action)\s*=\s*)(["'])([^"']*)\2/gi, (m, pre, q, val) => {
+      const p = proxify(val);
+      return p ? pre + q + p + q : m;
+    });
     try {
-      const u = new URL(target);
       if (!/<base[\s>]/i.test(html)) {
-        html = html.replace(/<head([^>]*)>/i, `<head$1><base href="${u.origin}/">`);
+        const b = new URL(finalUrl);
+        html = html.replace(/<head([^>]*)>/i, `<head$1><base href="${b.origin}/">`);
       }
     } catch {}
     return new Response(html, { status: upstream.status, headers: stripHeaders(upstream.headers) });
