@@ -101,8 +101,9 @@ function normalizeUrl(u){
   try{ new URL(u); return u; }catch(e){ return ''; }
 }
 
+const CF_DEFAULT = 'https://qaq-proxy.chattsun268.workers.dev';
 function getCFBase(){
-  return (localStorage.getItem('cf_worker')||'').trim().replace(/\/+$/,'');
+  return ((localStorage.getItem('cf_worker')||'').trim().replace(/\/+$/,'') || CF_DEFAULT);
 }
 function onNodeChange(){
   const v = $('#proxy-node').value;
@@ -187,10 +188,10 @@ function proxyFullscreen(){
 /* clock + init */
 setInterval(()=>{ const el=$('#clock'); if(el) el.textContent = new Date().toLocaleString('zh-CN',{hour12:false}); },1000);
 $('#year').textContent = new Date().getFullYear();
-// 恢复上次节点 + CF 地址
+// 恢复上次节点 + CF 地址（无保存时用内置默认 Worker，开箱即用）
 try{
   const n = localStorage.getItem('proxy_node'); if(n) $('#proxy-node').value = n;
-  const cf = localStorage.getItem('cf_worker'); if(cf && $('#cf-worker')) $('#cf-worker').value = cf;
+  if($('#cf-worker')) $('#cf-worker').value = getCFBase();
   onNodeChange();
 }catch(e){}
 renderGames();
