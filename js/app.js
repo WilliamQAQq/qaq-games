@@ -171,6 +171,8 @@ function goProxy(){
 }
 
 function quickProxy(u){ $('#proxy-url').value = u; goProxy(); }
+// 验证类站点（油管镜像等）在 iframe 里过不了验证，用新标签页直开，一次通过
+function quickOpen(u){ window.open(u, '_blank'); }
 
 function saveProxyHistory(u){
   try{
